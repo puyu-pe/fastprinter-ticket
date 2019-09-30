@@ -1,3 +1,4 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+print_ticket:
+    path: /print_ticket
+    controller: App\Controller\PrinterController::printTicket
+    methods : POST
