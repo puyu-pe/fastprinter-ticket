@@ -8,4 +8,5 @@
 !/public/qr/index.html
 /var/
 /vendor/
+/.idea/
 ###< symfony/framework-bundle ###
