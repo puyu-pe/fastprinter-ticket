@@ -1,4 +1,13 @@
 {
+    "chillerlan/php-qrcode": {
+        "version": "3.1.1"
+    },
+    "chillerlan/php-settings-container": {
+        "version": "1.2.1"
+    },
+    "mike42/escpos-php": {
+        "version": "v2.1"
+    },
     "psr/cache": {
         "version": "1.0.1"
     },
