@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Service\SweetTicketPrinter;
 
 class PrinterController
 {
@@ -18,15 +19,20 @@ class PrinterController
             if(!$data)
                 throw new \Exception('Formato incorrecto');
 
+            $STPrinter = new SweetTicketPrinter($data);
+            $STPrinter->printTicket();
+
             $response->setContent(json_encode([
-                'message' => $data
-            ]), 200);
+                'message' => 'Se imprimio correctamente'
+            ]))
+            ->setStatusCode(200);
         }
-        catch(\Throwable $th){
+        catch(Throwable $th){
 
             $response->setContent(json_encode([
             'message' => $th->getMessage()
-            ]), 500);
+            ]))
+            ->setStatusCode(500);
         }
 
         $response->headers->set('Content-Type', 'application/json');
