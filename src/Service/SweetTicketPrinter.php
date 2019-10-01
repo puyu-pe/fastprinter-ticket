@@ -110,11 +110,11 @@ class SweetTicketPrinter
             switch ( $this->type )
             {
                 case 'invoice':
-                    $this->business_additional();
+                    $this->businessAdditional();
                     $this->documentLegal();
                     $this->ticket->feed(1);
-
                     $this->customer();
+                    $this->ticket->feed(1);
                     $this->additional();
                     $this->ticket->feed(1);
                     $this->detail();
@@ -205,7 +205,7 @@ class SweetTicketPrinter
         $this->ticket->feed(1);
     }
 
-    private function business_additional()
+    private function businessAdditional()
     {
         if(!$this->data->business->additional)
             return;
@@ -276,17 +276,15 @@ class SweetTicketPrinter
             return;
 
         foreach ($this->data->additional as $field => $value){
-            $this->ticket->text( str_pad( "$field $value", $this->width, ' ', STR_PAD_BOTH ) );
+            $this->ticket->text( str_pad( "$field $value", $this->width, ' ', STR_PAD_RIGHT ) );
             $this->ticket->feed(1);
         }
-
-        $this->ticket->feed(1);
     }
 
     private function detail()
     {
         $this->ticket->setEmphasis( true );
-        $this->ticket->text( str_pad( ' DESCRIPCION', 35, ' ', STR_PAD_RIGHT ) );
+        $this->ticket->text( str_pad( ' DESCRIPCIÓN', 35, ' ', STR_PAD_RIGHT ) );
         $this->ticket->text( str_pad( 'TOTAL', 7, ' ', STR_PAD_RIGHT ) );
 
         $this->ticket->feed(1);
@@ -351,7 +349,7 @@ class SweetTicketPrinter
 
         if(is_array($finalMessage)){
             foreach ( $finalMessage as $message){
-                $this->ticket->text(str_pad( $this->data->finalMessage, $this->width, ' ', STR_PAD_BOTH ) );
+                $this->ticket->text(str_pad( $message, $this->width, ' ', STR_PAD_BOTH ) );
                 $this->ticket->feed(1);
             }
         }
@@ -363,6 +361,8 @@ class SweetTicketPrinter
 
     private function qr()
     {
+        $this->ticket->setJustification( Printer::JUSTIFY_CENTER );
+
         $options = new QROptions([
             'version'   => 10,
             'eccLevel'  => QRCode::ECC_Q,
