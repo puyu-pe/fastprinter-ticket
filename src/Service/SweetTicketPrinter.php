@@ -114,10 +114,12 @@ class SweetTicketPrinter
                     $this->documentLegal();
                     $this->ticket->feed(1);
                     $this->customer();
+                    $this->ticket->feed(1);
                     $this->additional();
                     $this->ticket->feed(1);
-                    $this->detail();
+                    $this->items();
                     $this->amounts();
+                    $this->additionalFooter();
                     $this->finalMessage();
                     $this->qr();
 
@@ -246,23 +248,16 @@ class SweetTicketPrinter
         if(!isset($this->data->customer))
             return;
 
-        $this->ticket->setEmphasis( true );
-        $this->ticket->text( str_pad( 'ADQUIRIENTE : ', $this->width, ' ', STR_PAD_RIGHT ) );
-        $this->ticket->feed(1);
-        $this->ticket->setEmphasis( false );
-
         if( $this->data->customer )
         {
-            $customer = $this->data->customer;
+            $customer_rows = $this->data->customer;
+            $this->ticket->setEmphasis( true );
 
-            $this->ticket->text( str_pad( $customer->document_type . ' : ' . $customer->document_number, $this->width, ' ', STR_PAD_RIGHT ) );
-            $this->ticket->feed(1);
-
-            $this->ticket->text( str_pad( $customer->description, $this->width, ' ', STR_PAD_RIGHT ) );
-            $this->ticket->feed(1);
-
-            $this->ticket->text( str_pad( $customer->address ?? '', $this->width, ' ', STR_PAD_RIGHT ) );
-            $this->ticket->feed(1);
+            foreach ($customer_rows as $row){
+                $this->ticket->text( str_pad( $row, $this->width, ' ', STR_PAD_RIGHT ) );
+                $this->ticket->setEmphasis( false );
+                $this->ticket->feed(1);
+            }
         }
         else
         {
@@ -282,26 +277,35 @@ class SweetTicketPrinter
         }
     }
 
-    private function detail()
+    private function items()
     {
         if(!isset($this->data->items))
             return;
 
+        $items = $this->data->items;
         $this->ticket->setEmphasis( true );
-        $this->ticket->text( str_pad( ' DESCRIPCIÓN', 35, ' ', STR_PAD_RIGHT ) );
-        $this->ticket->text( str_pad( 'TOTAL', 7, ' ', STR_PAD_RIGHT ) );
+
+        if(isset($items[0]->quantity)){
+            $this->ticket->text( str_pad( 'CAN', 4, ' ', STR_PAD_LEFT ) );
+            $this->ticket->text( str_pad( ' DESCRIPCIÓN', 31, ' ', STR_PAD_RIGHT ) );
+            $this->ticket->text( str_pad( 'TOTAL', 7, ' ', STR_PAD_RIGHT ) );
+        }
+        else{
+            $this->ticket->text( str_pad( 'DESCRIPCIÓN', 36, ' ', STR_PAD_RIGHT ) );
+            $this->ticket->text( str_pad( 'TOTAL', 7, ' ', STR_PAD_RIGHT ) );
+        }
 
         $this->ticket->feed(1);
         $this->ticket->text( str_repeat( '-', $this->width ) );
-        $this->ticket->feed(1);
         $this->ticket->setEmphasis( false );
+        $this->ticket->feed(1);
 
         foreach ($this->data->items as $item)
         {
             if(is_array($item->description)){
-                $descriptionLength = 35;
                 for ($i = 0; $i < count($item->description); $i++){
-                    $this->ticket->text( str_pad($item->description[$i], $descriptionLength , ' ', STR_PAD_RIGHT)  );
+                    $descriptionLength = 35;
+                    $this->ticket->text( str_pad($item->description[$i], $descriptionLength , ' ', STR_PAD_RIGHT) );
 
                     if($i == 0 ){
                         $this->ticket->text( str_pad($item->totalPrice, 7 , ' ', STR_PAD_LEFT)  );
@@ -311,8 +315,11 @@ class SweetTicketPrinter
                 }
             }
             else{
-                $this->ticket->text( str_repeat(' ', 2) );
-                $this->ticket->text( str_pad($item->description, 33 , ' ', STR_PAD_RIGHT)  );
+                $descriptionLength = 31;
+                $quantityLength = 4;
+
+                $this->ticket->text( str_pad($item->quantity, $quantityLength, ' ', STR_PAD_LEFT)  );
+                $this->ticket->text( str_pad(" ".$item->description, $descriptionLength , ' ', STR_PAD_RIGHT)  );
                 $this->ticket->text( str_pad($item->totalPrice, 7 , ' ', STR_PAD_LEFT)  );
                 $this->ticket->feed(1);
             }
@@ -329,6 +336,20 @@ class SweetTicketPrinter
         foreach ($this->data->amounts as $field => $value){
             $this->ticket->text( $this->total_align_text($field) );
             $this->ticket->text( $this->total_align_value($value) );
+            $this->ticket->feed(1);
+        }
+
+        $this->ticket->text( str_repeat( '-', $this->width ) );
+        $this->ticket->feed(1);
+    }
+
+    private function additionalFooter()
+    {
+        if(!isset($this->data->additionalFooter))
+            return;
+
+        foreach ($this->data->additionalFooter as $additionalFooter){
+            $this->ticket->text( str_pad( $additionalFooter, $this->width, ' ', STR_PAD_RIGHT ) );
             $this->ticket->feed(1);
         }
 

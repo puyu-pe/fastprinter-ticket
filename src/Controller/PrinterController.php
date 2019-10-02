@@ -12,7 +12,6 @@ class PrinterController
     public function printTicket(Request $request)
     {
         $response = new Response();
-        echo "asd";
         try{
             $data = json_decode($request->getContent());
 
@@ -35,7 +34,7 @@ class PrinterController
             ]))
             ->setStatusCode(200);
         }
-        catch(Throwable $th){
+        catch(\Throwable $th){
 
             $response->setContent(json_encode([
             'message' => $th->getMessage()
