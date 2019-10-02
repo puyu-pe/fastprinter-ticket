@@ -114,12 +114,10 @@ class SweetTicketPrinter
                     $this->documentLegal();
                     $this->ticket->feed(1);
                     $this->customer();
-                    $this->ticket->feed(1);
                     $this->additional();
                     $this->ticket->feed(1);
                     $this->detail();
                     $this->amounts();
-                    $this->ticket->feed(1);
                     $this->finalMessage();
                     $this->qr();
 
@@ -207,11 +205,11 @@ class SweetTicketPrinter
 
     private function businessAdditional()
     {
-        if(!$this->data->business->additional)
+        if(!isset($this->data->business->additional))
             return;
 
-        foreach ($this->data->business->additional as $field => $value){
-            $this->ticket->text( str_pad( "$field $value", $this->width, ' ', STR_PAD_BOTH ) );
+        foreach ($this->data->business->additional as $additional){
+            $this->ticket->text( str_pad( $additional, $this->width, ' ', STR_PAD_BOTH ) );
             $this->ticket->feed(1);
         }
     }
@@ -245,6 +243,9 @@ class SweetTicketPrinter
 
     private function customer()
     {
+        if(!isset($this->data->customer))
+            return;
+
         $this->ticket->setEmphasis( true );
         $this->ticket->text( str_pad( 'ADQUIRIENTE : ', $this->width, ' ', STR_PAD_RIGHT ) );
         $this->ticket->feed(1);
@@ -272,17 +273,20 @@ class SweetTicketPrinter
 
     private function additional()
     {
-        if(!$this->data->additional)
+        if(!isset($this->data->additional))
             return;
 
-        foreach ($this->data->additional as $field => $value){
-            $this->ticket->text( str_pad( "$field $value", $this->width, ' ', STR_PAD_RIGHT ) );
+        foreach ($this->data->additional as $additional){
+            $this->ticket->text( str_pad( $additional, $this->width, ' ', STR_PAD_RIGHT ) );
             $this->ticket->feed(1);
         }
     }
 
     private function detail()
     {
+        if(!isset($this->data->items))
+            return;
+
         $this->ticket->setEmphasis( true );
         $this->ticket->text( str_pad( ' DESCRIPCIÓN', 35, ' ', STR_PAD_RIGHT ) );
         $this->ticket->text( str_pad( 'TOTAL', 7, ' ', STR_PAD_RIGHT ) );
@@ -310,17 +314,18 @@ class SweetTicketPrinter
                 $this->ticket->text( str_repeat(' ', 2) );
                 $this->ticket->text( str_pad($item->description, 33 , ' ', STR_PAD_RIGHT)  );
                 $this->ticket->text( str_pad($item->totalPrice, 7 , ' ', STR_PAD_LEFT)  );
+                $this->ticket->feed(1);
             }
-
-            $this->ticket->feed(1);
         }
 
-        $this->ticket->text( str_repeat( '-', $this->width ) );
-        $this->ticket->feed(1);
+        $this->ticket->text( str_repeat( '-', $this->width )."\n" );
     }
 
     private function amounts()
     {
+        if(!isset($this->data->amounts))
+            return;
+
         foreach ($this->data->amounts as $field => $value){
             $this->ticket->text( $this->total_align_text($field) );
             $this->ticket->text( $this->total_align_value($value) );
@@ -343,6 +348,9 @@ class SweetTicketPrinter
 
     private function finalMessage()
     {
+        if(!isset($this->data->finalMessage))
+            return;
+
         $finalMessage = $this->data->finalMessage;
         if(!$finalMessage)
             return;
@@ -361,6 +369,9 @@ class SweetTicketPrinter
 
     private function qr()
     {
+        if(!isset($this->data->stringQR))
+            return;
+
         $this->ticket->setJustification( Printer::JUSTIFY_CENTER );
 
         $options = new QROptions([
