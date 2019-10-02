@@ -12,15 +12,23 @@ class PrinterController
     public function printTicket(Request $request)
     {
         $response = new Response();
-
+        echo "asd";
         try{
             $data = json_decode($request->getContent());
 
             if(!$data)
                 throw new \Exception('Formato incorrecto');
 
-            $STPrinter = new SweetTicketPrinter($data);
-            $STPrinter->printTicket();
+            if(is_array($data)){
+                foreach ($data as $ticket){
+                    $STPrinter = new SweetTicketPrinter($ticket);
+                    $STPrinter->printTicket();
+                }
+            }
+            else{
+                $STPrinter = new SweetTicketPrinter($data);
+                $STPrinter->printTicket();
+            }
 
             $response->setContent(json_encode([
                 'message' => 'Se imprimio correctamente'
