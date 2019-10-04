@@ -11,6 +11,7 @@ use Mike42\Escpos\PrintConnectors\CupsPrintConnector;
 
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 
 class SweetTicketPrinter
 {
@@ -65,7 +66,10 @@ class SweetTicketPrinter
 
                 case 'ethernet':
                     $connector = new NetworkPrintConnector( $printer->name_system, $printer->port, 3);
+                    break;
 
+                case 'linux-usb':
+                    $connector = new FilePrintConnector( $printer->name_system);
                     break;
 
                 case 'cups':
