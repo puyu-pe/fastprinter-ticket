@@ -179,7 +179,7 @@ class SweetTicketPrinter
             }
 
             $this->ticket->feed(4);
-            $this->ticket->cut('CUT_PARTIAL');
+            $this->ticket->cut(Printer::CUT_PARTIAL);
             //$this->ticket->close();
         } catch (Exception $e) {
             echo "No se pudo imprimir en esta ticketera: " . $e->getMessage() . "\n";
