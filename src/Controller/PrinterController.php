@@ -13,10 +13,10 @@ class PrinterController
     {
         $response = new Response();
         try{
-            $data = json_decode($request->getContent());
-
+            $data = $request->query->all();
+            var_dump($data);
             if(!$data)
-                throw new \Exception('Formato incorrecto');
+                throw new \Exception('Formato incorrectos');
 
             if(is_array($data)){
                 foreach ($data as $ticket){

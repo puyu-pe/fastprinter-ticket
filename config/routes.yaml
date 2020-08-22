@@ -1,4 +1,4 @@
 print_ticket:
     path: /print_ticket
     controller: App\Controller\PrinterController::printTicket
-    methods : POST
+    methods : POST|GET|OPTIONS|PUT|HEAD
