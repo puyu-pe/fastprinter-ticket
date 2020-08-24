@@ -48,7 +48,7 @@ class SweetTicketPrinter
         $this->times = (!$data->times) ? 1 : $data->times;
     }
 
-    public function init( $printer )
+    public function init($printer)
     {
         $this->ticket = $this->connect($printer);
     }
@@ -57,23 +57,22 @@ class SweetTicketPrinter
     {
         $connector = null;
         try {
-            switch ( $printer->type )
-            {
+            switch ($printer->type) {
                 case 'windows-usb':
                 case 'smb':
-                    $connector = new WindowsPrintConnector( $printer->name_system );
+                    $connector = new WindowsPrintConnector($printer->name_system);
                     break;
 
                 case 'ethernet':
-                    $connector = new NetworkPrintConnector( $printer->name_system, $printer->port, 3);
+                    $connector = new NetworkPrintConnector($printer->name_system, $printer->port, 3);
                     break;
 
                 case 'linux-usb':
-                    $connector = new FilePrintConnector( $printer->name_system);
+                    $connector = new FilePrintConnector($printer->name_system);
                     break;
 
                 case 'cups':
-                    $connector = new CupsPrintConnector( $printer->name_system );
+                    $connector = new CupsPrintConnector($printer->name_system);
                     break;
 
                 default:
@@ -83,11 +82,10 @@ class SweetTicketPrinter
 
             $ticket = new Printer($connector);
 
-            if($only_check)
+            if ($only_check)
                 $ticket->close();
             else
                 return $ticket;
-
         } catch (\Throwable $th) {
             throw new \Exception("No se pudo conectar con la tiketera");
         }
@@ -96,10 +94,10 @@ class SweetTicketPrinter
 
     public function printTicket()
     {
-        $this->init( $this->printer );
+        $this->init($this->printer);
         $times = $this->times;
 
-        for ($i=0; $i < $times; $i++) {
+        for ($i = 0; $i < $times; $i++) {
             $this->printLayout();
         }
 
@@ -111,8 +109,7 @@ class SweetTicketPrinter
     {
         try {
             $this->header();
-            switch ( $this->type )
-            {
+            switch ($this->type) {
                 case 'invoice':
                     $this->businessAdditional();
                     $this->documentLegal();
@@ -144,7 +141,7 @@ class SweetTicketPrinter
 
                 case 'command':
                     $this->ticket->feed(1);
-                    $this->print_location();
+                    $this->productionArea();
                     $this->documentLegal();
                     $this->additional();
                     $this->table_waiter();
@@ -190,20 +187,24 @@ class SweetTicketPrinter
 
     private function header()
     {
-        if($this->data->business->comercialDescription->type == 'text'){
-            $this->ticket->setEmphasis( true );
+        if ($this->data->business->comercialDescription->type == 'text') {
+            $this->ticket->setEmphasis(true);
             $this->ticket->setTextSize(2, 2);
-            $this->ticket->text( str_pad(
-                    strtoupper( $this->data->business->comercialDescription->value ),
-                $this->width/2, ' ', STR_PAD_BOTH ) ) ;
-            $this->ticket->setEmphasis( false );
+            $this->ticket->text(str_pad(
+                strtoupper($this->data->business->comercialDescription->value),
+                $this->width / 2,
+                ' ',
+                STR_PAD_BOTH
+            ));
+            $this->ticket->setEmphasis(false);
             $this->ticket->setTextSize(1, 1);
-
-            $this->ticket->feed(1);
-            $this->ticket->text( str_pad( ' '.$this->data->business->description.' ', $this->width, '*', STR_PAD_BOTH ) );
         }
-        if($this->data->business->comercialDescription->type == 'img') {
-            throw  new \Exception('No se soporta imagen aun');
+        if ($this->data->business->comercialDescription->type == 'img') {
+        }
+
+        if (isset($this->data->business->description)) {
+            $this->ticket->feed(1);
+            $this->ticket->text(str_pad(' ' . $this->data->business->description . ' ', $this->width, '*', STR_PAD_BOTH));
         }
 
         $this->ticket->feed(1);
@@ -211,193 +212,196 @@ class SweetTicketPrinter
 
     private function businessAdditional()
     {
-        if(!isset($this->data->business->additional))
+        if (!isset($this->data->business->additional))
             return;
 
-        foreach ($this->data->business->additional as $additional){
-            $this->ticket->text( str_pad( $additional, $this->width, ' ', STR_PAD_BOTH ) );
+        foreach ($this->data->business->additional as $additional) {
+            $this->ticket->text(str_pad($additional, $this->width, ' ', STR_PAD_BOTH));
             $this->ticket->feed(1);
         }
     }
 
+    private function productionArea()
+    {
+        $this->printer->feed(1);
+        $this->printer->text(str_pad($this->data->productionArea, $this->width, '#', STR_PAD_BOTH));
+        $this->printer->feed(1);
+    }
+
     private function documentLegal()
     {
-        $this->ticket->setEmphasis( true );
+        $this->ticket->setEmphasis(true);
 
-        switch ( $this->type ) {
+        switch ($this->type) {
             case 'invoice':
             case 'note':
             case 'command':
-                $this->ticket->text(  str_pad(
-                $this->data->document.' : '.
-                $this->data->documentId,
-                $this->width, ' ', STR_PAD_BOTH ) );
+                $this->ticket->text(str_pad($this->data->document . ' : ' . $this->data->documentId, $this->width, ' ', STR_PAD_BOTH));
                 break;
 
             case 'precount':
                 $this->ticket->setTextSize(2, 2);
-                $this->ticket->text( str_pad(
-                    strtoupper( $this->data->document ),
-                    $this->width/2, ' ', STR_PAD_BOTH ) ) ;
+                $this->ticket->text(str_pad(
+                    strtoupper($this->data->document),
+                    $this->width / 2,
+                    ' ',
+                    STR_PAD_BOTH
+                ));
                 $this->ticket->setTextSize(1, 1);
                 break;
         }
 
         $this->ticket->feed(1);
-        $this->ticket->setEmphasis( false );
+        $this->ticket->setEmphasis(false);
     }
 
     private function customer()
     {
-        if(!isset($this->data->customer))
+        if (!isset($this->data->customer))
             return;
 
-        if( $this->data->customer )
-        {
+        if ($this->data->customer) {
             $customer_rows = $this->data->customer;
-            $this->ticket->setEmphasis( true );
+            $this->ticket->setEmphasis(true);
 
-            foreach ($customer_rows as $row){
-                $this->ticket->text( str_pad( $row, $this->width, ' ', STR_PAD_RIGHT ) );
-                $this->ticket->setEmphasis( false );
+            foreach ($customer_rows as $row) {
+                $this->ticket->text(str_pad($row, $this->width, ' ', STR_PAD_RIGHT));
+                $this->ticket->setEmphasis(false);
                 $this->ticket->feed(1);
             }
-        }
-        else
-        {
-            $this->ticket->text( str_pad( '--', $this->width, ' ', STR_PAD_RIGHT ) );
+        } else {
+            $this->ticket->text(str_pad('--', $this->width, ' ', STR_PAD_RIGHT));
             $this->ticket->feed(1);
         }
     }
 
     private function additional()
     {
-        if(!isset($this->data->additional))
+        if (!isset($this->data->additional))
             return;
 
-        foreach ($this->data->additional as $additional){
-            $this->ticket->text( str_pad( $additional, $this->width, ' ', STR_PAD_RIGHT ) );
+        foreach ($this->data->additional as $additional) {
+            $this->ticket->text(str_pad($additional, $this->width, ' ', STR_PAD_RIGHT));
             $this->ticket->feed(1);
         }
     }
 
     private function items()
     {
-        if(!isset($this->data->items))
+        if (!isset($this->data->items))
             return;
 
         $items = $this->data->items;
-        $this->ticket->setEmphasis( true );
+        $this->ticket->setEmphasis(true);
 
-        if(isset($items[0]->quantity)){
-            $this->ticket->text( str_pad( 'CAN', 4, ' ', STR_PAD_LEFT ) );
-            $this->ticket->text( str_pad( ' DESCRIPCIÓN', 31, ' ', STR_PAD_RIGHT ) );
-            $this->ticket->text( str_pad( 'TOTAL', 7, ' ', STR_PAD_RIGHT ) );
-        }
-        else{
-            $this->ticket->text( str_pad( 'DESCRIPCIÓN', 36, ' ', STR_PAD_RIGHT ) );
-            $this->ticket->text( str_pad( 'TOTAL', 7, ' ', STR_PAD_RIGHT ) );
+        if (isset($items[0]->quantity)) {
+            $this->ticket->text(str_pad('CAN', 4, ' ', STR_PAD_LEFT));
+            $this->ticket->text(str_pad(' DESCRIPCIÓN', 31, ' ', STR_PAD_RIGHT));
+            $this->ticket->text(str_pad('TOTAL', 7, ' ', STR_PAD_RIGHT));
+        } else {
+            $this->ticket->text(str_pad('DESCRIPCIÓN', 36, ' ', STR_PAD_RIGHT));
+            $this->ticket->text(str_pad('TOTAL', 7, ' ', STR_PAD_RIGHT));
         }
 
         $this->ticket->feed(1);
-        $this->ticket->text( str_repeat( '-', $this->width ) );
-        $this->ticket->setEmphasis( false );
+        $this->ticket->text(str_repeat('-', $this->width));
+        $this->ticket->setEmphasis(false);
         $this->ticket->feed(1);
 
-        foreach ($this->data->items as $item)
-        {
-            if(is_array($item->description)){
-                for ($i = 0; $i < count($item->description); $i++){
+        foreach ($this->data->items as $item) {
+            if (is_array($item->description)) {
+                for ($i = 0; $i < count($item->description); $i++) {
                     $descriptionLength = 35;
-                    $this->ticket->text( str_pad($item->description[$i], $descriptionLength , ' ', STR_PAD_RIGHT) );
+                    $this->ticket->text(str_pad($item->description[$i], $descriptionLength, ' ', STR_PAD_RIGHT));
 
-                    if($i == 0 ){
-                        $this->ticket->text( str_pad($item->totalPrice, 7 , ' ', STR_PAD_LEFT)  );
+                    if ($i == 0) {
+                        $this->ticket->text(str_pad($item->totalPrice, 7, ' ', STR_PAD_LEFT));
                         $descriptionLength = $this->width;
                     }
                     $this->ticket->feed(1);
                 }
-            }
-            else{
+            } else {
                 $descriptionLength = 31;
                 $quantityLength = 4;
 
-                $this->ticket->text( str_pad($item->quantity, $quantityLength, ' ', STR_PAD_LEFT)  );
-                $this->ticket->text( str_pad(" ".$item->description, $descriptionLength , ' ', STR_PAD_RIGHT)  );
-                $this->ticket->text( str_pad($item->totalPrice, 7 , ' ', STR_PAD_LEFT)  );
+                $this->ticket->text(str_pad($item->quantity, $quantityLength, ' ', STR_PAD_LEFT));
+                $this->ticket->text(str_pad(" " . $item->description, $descriptionLength, ' ', STR_PAD_RIGHT));
+
+                if ($item->totalPrice)
+                    $this->ticket->text(str_pad($item->totalPrice, 7, ' ', STR_PAD_LEFT));
+
                 $this->ticket->feed(1);
             }
         }
 
-        $this->ticket->text( str_repeat( '-', $this->width )."\n" );
+        $this->ticket->text(str_repeat('-', $this->width) . "\n");
     }
 
     private function amounts()
     {
-        if(!isset($this->data->amounts))
+        if (!isset($this->data->amounts))
             return;
 
-        foreach ($this->data->amounts as $field => $value){
-            $this->ticket->text( $this->total_align_text($field) );
-            $this->ticket->text( $this->total_align_value($value) );
+        foreach ($this->data->amounts as $field => $value) {
+            $this->ticket->text($this->total_align_text($field));
+            $this->ticket->text($this->total_align_value($value));
             $this->ticket->feed(1);
         }
 
-        $this->ticket->text( str_repeat( '-', $this->width ) );
+        $this->ticket->text(str_repeat('-', $this->width));
         $this->ticket->feed(1);
     }
 
     private function additionalFooter()
     {
-        if(!isset($this->data->additionalFooter))
+        if (!isset($this->data->additionalFooter))
             return;
 
-        foreach ($this->data->additionalFooter as $additionalFooter){
-            $this->ticket->text( str_pad( $additionalFooter, $this->width, ' ', STR_PAD_RIGHT ) );
+        foreach ($this->data->additionalFooter as $additionalFooter) {
+            $this->ticket->text(str_pad($additionalFooter, $this->width, ' ', STR_PAD_RIGHT));
             $this->ticket->feed(1);
         }
 
-        $this->ticket->text( str_repeat( '-', $this->width ) );
+        $this->ticket->text(str_repeat('-', $this->width));
         $this->ticket->feed(1);
     }
 
-    private function total_align_text( $param )
+    private function total_align_text($param)
     {
-        return str_pad( $param , 35, " ", STR_PAD_LEFT );
+        return str_pad($param, 35, " ", STR_PAD_LEFT);
     }
 
-    private function total_align_value( $param )
+    private function total_align_value($param)
     {
-        return str_pad( $param , 7, ' ', STR_PAD_LEFT );
+        return str_pad($param, 7, ' ', STR_PAD_LEFT);
     }
 
     private function finalMessage()
     {
-        if(!isset($this->data->finalMessage))
+        if (!isset($this->data->finalMessage))
             return;
 
         $finalMessage = $this->data->finalMessage;
-        if(!$finalMessage)
+        if (!$finalMessage)
             return;
 
-        if(is_array($finalMessage)){
-            foreach ( $finalMessage as $message){
-                $this->ticket->text(str_pad( $message, $this->width, ' ', STR_PAD_BOTH ) );
+        if (is_array($finalMessage)) {
+            foreach ($finalMessage as $message) {
+                $this->ticket->text(str_pad($message, $this->width, ' ', STR_PAD_BOTH));
                 $this->ticket->feed(1);
             }
-        }
-        else{
-            $this->ticket->text(str_pad( $this->data->finalMessage, $this->width, ' ', STR_PAD_BOTH ) );
+        } else {
+            $this->ticket->text(str_pad($this->data->finalMessage, $this->width, ' ', STR_PAD_BOTH));
             $this->ticket->feed(1);
         }
     }
 
     private function qr()
     {
-        if(!isset($this->data->stringQR))
+        if (!isset($this->data->stringQR))
             return;
 
-        $this->ticket->setJustification( Printer::JUSTIFY_CENTER );
+        $this->ticket->setJustification(Printer::JUSTIFY_CENTER);
 
         $options = new QROptions([
             'version'   => 10,
@@ -405,14 +409,14 @@ class SweetTicketPrinter
             'scale'     => 4
         ]);
 
-        if ( $this->printer->name_system == '127.0.0.1' && $this->printer->type == 'ethernet') {
+        if ($this->printer->name_system == '127.0.0.1' && $this->printer->type == 'ethernet') {
             $this->ticket->text($this->data->stringQR);
             $this->ticket->feed(1);
         } else {
             $qrGenerator = new QRCode($options);
             $qrGenerator->render($this->data->stringQR, 'qr/qr.png');
-            $logo = EscposImage::load( 'qr/qr.png' , false);
-            $this->ticket->graphics( $logo, Printer::IMG_DEFAULT );
+            $logo = EscposImage::load('qr/qr.png', false);
+            $this->ticket->graphics($logo, Printer::IMG_DEFAULT);
         }
     }
 }

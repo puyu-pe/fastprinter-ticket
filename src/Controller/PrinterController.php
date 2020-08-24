@@ -14,7 +14,6 @@ class PrinterController
         $response = new Response();
         try{
             $data = $request->query->all();
-            var_dump($data);
             if(!$data)
                 throw new \Exception('Formato incorrectos');
 
