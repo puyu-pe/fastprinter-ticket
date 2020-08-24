@@ -12,19 +12,23 @@ class PrinterController
     public function printTicket(Request $request)
     {
         $response = new Response();
-        try{
-            $data = $request->query->all();
-            var_dump($data);
-            if(!$data)
-                throw new \Exception('Formato incorrectos');
+        try {
+            if ($request->isMethod('POST'))
+                $data = $request->getContent();
+            else
+                $data = $request->query->get('data');
 
-            if(is_array($data)){
-                foreach ($data as $ticket){
+            $data = json_decode($data);
+
+            if (!$data)
+                throw new \Exception('Formato incorrecto para impresion');
+
+            if (is_array($data)) {
+                foreach ($data as $ticket) {
                     $STPrinter = new SweetTicketPrinter($ticket);
                     $STPrinter->printTicket();
                 }
-            }
-            else{
+            } else {
                 $STPrinter = new SweetTicketPrinter($data);
                 $STPrinter->printTicket();
             }
@@ -32,18 +36,17 @@ class PrinterController
             $response->setContent(json_encode([
                 'message' => 'Se imprimio correctamente'
             ]))
-            ->setStatusCode(200);
-        }
-        catch(\Throwable $th){
+                ->setStatusCode(200);
+        } catch (\Throwable $th) {
 
             $response->setContent(json_encode([
-            'message' => $th->getMessage()
+                'message' => $th->getMessage()
             ]))
-            ->setStatusCode(500);
+                ->setStatusCode(500);
         }
 
-        $response->headers->set('Content-Type', 'application/json');
-        $response->headers->set('Access-Control-Allow-Origin', '*');
+        // $response->headers->set('Content-Type', 'application/json');
+        // $response->headers->set('Access-Control-Allow-Origin', '*');
 
         return $response;
     }
