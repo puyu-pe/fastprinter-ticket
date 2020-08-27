@@ -122,7 +122,7 @@ class SweetTicketPrinter
                     $this->amounts();
                     $this->additionalFooter();
                     $this->finalMessage();
-                    $this->qr();
+                    $this->stringQR();
 
                     $this->ticket->pulse();
                     break;
@@ -142,13 +142,12 @@ class SweetTicketPrinter
                 case 'command':
                     $this->ticket->feed(1);
                     $this->productionArea();
+                    $this->ticket->feed(1);
+                    $this->textBackgroundInverted();
                     $this->documentLegal();
                     $this->additional();
-                    $this->table_waiter();
                     $this->ticket->feed(1);
-                    $this->annulment();
-                    $this->ticket->feed(1);
-                    $this->detail();
+                    $this->items();
                     break;
 
                 case 'precount':
@@ -163,11 +162,11 @@ class SweetTicketPrinter
 
                 case 'extra':
                     $this->ticket->feed(1);
-                    $this->extra_header();
+                    $this->titleExtra();
                     $this->ticket->feed(1);
-                    $this->extra_general();
+                    $this->additional();
                     $this->ticket->feed(1);
-                    $this->detail();
+                    $this->items();
                     break;
 
                 default:
@@ -187,29 +186,42 @@ class SweetTicketPrinter
 
     private function header()
     {
-        if ($this->data->business->comercialDescription->type == 'text') {
-            $this->ticket->setEmphasis(true);
-            $this->ticket->setTextSize(2, 2);
-            $this->ticket->text(str_pad(
-                strtoupper($this->data->business->comercialDescription->value),
-                $this->width / 2,
-                ' ',
-                STR_PAD_BOTH
-            ));
-            $this->ticket->setEmphasis(false);
-            $this->ticket->setTextSize(1, 1);
-        }
-        if ($this->data->business->comercialDescription->type == 'img') {
+        if (isset($this->data->business->comercialDescription)) {
+            if ($this->data->business->comercialDescription->type == 'text') {
+                $this->ticket->setEmphasis(true);
+                $this->ticket->setTextSize(2, 2);
+                $this->ticket->text(str_pad(
+                    strtoupper($this->data->business->comercialDescription->value),
+                    $this->width / 2,
+                    ' ',
+                    STR_PAD_BOTH
+                ));
+                $this->ticket->setEmphasis(false);
+                $this->ticket->setTextSize(1, 1);
+            }
+            if ($this->data->business->comercialDescription->type == 'img') {
+            }
+
+            $this->ticket->feed(1);
         }
 
         if (isset($this->data->business->description)) {
-            $this->ticket->feed(1);
             $this->ticket->text(str_pad(' ' . $this->data->business->description . ' ', $this->width, '*', STR_PAD_BOTH));
         }
 
         $this->ticket->feed(1);
     }
 
+    private function titleExtra()
+    {
+        $this->ticket->setTextSize(2, 2);
+        $this->ticket->text(str_pad($this->data->titleExtra->title, $this->width / 2, ' ', STR_PAD_BOTH));
+
+        $this->ticket->setTextSize(1, 1);
+        $this->ticket->feed(1);
+        $this->ticket->text(str_pad($this->data->titleExtra->subtitle, $this->width, ' ', STR_PAD_BOTH));
+        $this->ticket->feed(1);
+    }
     private function businessAdditional()
     {
         if (!isset($this->data->business->additional))
@@ -223,9 +235,8 @@ class SweetTicketPrinter
 
     private function productionArea()
     {
-        $this->printer->feed(1);
-        $this->printer->text(str_pad($this->data->productionArea, $this->width, '#', STR_PAD_BOTH));
-        $this->printer->feed(1);
+        $this->ticket->text(str_pad(" {$this->data->productionArea} ", $this->width, '#', STR_PAD_BOTH));
+        $this->ticket->feed(1);
     }
 
     private function documentLegal()
@@ -236,13 +247,13 @@ class SweetTicketPrinter
             case 'invoice':
             case 'note':
             case 'command':
-                $this->ticket->text(str_pad($this->data->document . ' : ' . $this->data->documentId, $this->width, ' ', STR_PAD_BOTH));
+                $this->ticket->text(str_pad($this->data->document->description . ' : ' . $this->data->document->identifier, $this->width, ' ', STR_PAD_BOTH));
                 break;
 
             case 'precount':
                 $this->ticket->setTextSize(2, 2);
                 $this->ticket->text(str_pad(
-                    strtoupper($this->data->document),
+                    strtoupper($this->data->document->description),
                     $this->width / 2,
                     ' ',
                     STR_PAD_BOTH
@@ -253,6 +264,17 @@ class SweetTicketPrinter
 
         $this->ticket->feed(1);
         $this->ticket->setEmphasis(false);
+    }
+
+    private function textBackgroundInverted()
+    {
+        if (!isset($this->data->textBackgroundInverted))
+            return;
+
+        $this->ticket->setReverseColors(TRUE);
+        $this->ticket->text(str_pad(" {$this->data->textBackgroundInverted} ", $this->width, ' ', STR_PAD_BOTH));
+        $this->ticket->feed(1);
+        $this->ticket->setReverseColors(FALSE);
     }
 
     private function customer()
@@ -327,9 +349,14 @@ class SweetTicketPrinter
                 $this->ticket->text(str_pad($item->quantity, $quantityLength, ' ', STR_PAD_LEFT));
                 $this->ticket->text(str_pad(" " . $item->description, $descriptionLength, ' ', STR_PAD_RIGHT));
 
-                if ($item->totalPrice)
+                if (isset($item->totalPrice))
                     $this->ticket->text(str_pad($item->totalPrice, 7, ' ', STR_PAD_LEFT));
 
+                if (isset($item->commentary)) {
+                    $this->ticket->feed(1);
+                    $this->ticket->text(str_repeat(' ', 7));
+                    $this->ticket->text(str_pad("=> " . $item->commentary, 35, ' ', STR_PAD_RIGHT));
+                }
                 $this->ticket->feed(1);
             }
         }
@@ -396,7 +423,7 @@ class SweetTicketPrinter
         }
     }
 
-    private function qr()
+    private function stringQR()
     {
         if (!isset($this->data->stringQR))
             return;

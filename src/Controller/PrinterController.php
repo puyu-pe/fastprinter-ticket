@@ -37,7 +37,7 @@ class PrinterController
                 'message' => 'Se imprimio correctamente'
             ]))
                 ->setStatusCode(200);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
 
             $response->setContent(json_encode([
                 'message' => $th->getMessage()
