@@ -166,6 +166,7 @@ class SweetTicketPrinter
                     $this->additional();
                     $this->ticket->feed(1);
                     $this->items();
+                    $this->amounts();
                     break;
 
                 default:
