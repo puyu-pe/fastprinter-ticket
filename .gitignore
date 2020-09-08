@@ -4,8 +4,8 @@
 /.env.local.php
 /.env.*.local
 /public/bundles/
-/public/qr/
-!/public/qr/index.html
+/public/img/
+!/public/img/index.html
 /var/
 /vendor/
 /.idea/
