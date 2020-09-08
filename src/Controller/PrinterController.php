@@ -4,14 +4,14 @@
 namespace App\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use App\Service\SweetTicketPrinter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class PrinterController
 {
     public function printTicket(Request $request)
     {
-        $response = new Response();
+        $response = [];
         try {
             if ($request->isMethod('POST'))
                 $data = $request->getContent();
@@ -33,21 +33,19 @@ class PrinterController
                 $STPrinter->printTicket();
             }
 
-            $response->setContent(json_encode([
+            $response = [
+                'success' => TRUE,
                 'message' => 'Se imprimio correctamente'
-            ]))
-                ->setStatusCode(200);
-        } catch (Throwable $th) {
-
-            $response->setContent(json_encode([
+            ];
+            ;
+        } catch (\Throwable $th) {
+            $response = [
+                'success' => FALSE,
                 'message' => $th->getMessage()
-            ]))
-                ->setStatusCode(500);
+            ];
+        } finally {
+
+            return new JsonResponse($response);
         }
-
-        // $response->headers->set('Content-Type', 'application/json');
-        // $response->headers->set('Access-Control-Allow-Origin', '*');
-
-        return $response;
     }
 }

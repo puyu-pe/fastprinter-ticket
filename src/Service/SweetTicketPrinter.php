@@ -107,7 +107,6 @@ class SweetTicketPrinter
 
     private function printLayout()
     {
-        try {
             $this->header();
             switch ($this->type) {
                 case 'invoice':
@@ -177,9 +176,7 @@ class SweetTicketPrinter
             $this->ticket->feed(4);
             $this->ticket->cut(Printer::CUT_PARTIAL);
             //$this->ticket->close();
-        } catch (Exception $e) {
-            echo "No se pudo imprimir en esta ticketera: " . $e->getMessage() . "\n";
-        }
+
     }
 
     /*----------  privates  ----------*/
@@ -200,6 +197,15 @@ class SweetTicketPrinter
                 $this->ticket->setTextSize(1, 1);
             }
             if ($this->data->business->comercialDescription->type == 'img') {
+                $logo = 'img/logo.png';
+
+                if (!file_exists('img/logo.png'))
+                    throw new \Exception("No se encontro el logo");
+
+                $this->ticket->setJustification(Printer::JUSTIFY_CENTER);
+                $qr = EscposImage::load($logo, false);
+                $this->ticket->graphics($qr, Printer::IMG_DEFAULT);
+                $this->ticket->setJustification(Printer::JUSTIFY_LEFT);
             }
 
             $this->ticket->feed(1);
@@ -441,9 +447,9 @@ class SweetTicketPrinter
             $this->ticket->feed(1);
         } else {
             $qrGenerator = new QRCode($options);
-            $qrGenerator->render($this->data->stringQR, 'qr/qr.png');
-            $logo = EscposImage::load('qr/qr.png', false);
-            $this->ticket->graphics($logo, Printer::IMG_DEFAULT);
+            $qrGenerator->render($this->data->stringQR, 'img/qr.png');
+            $qr = EscposImage::load('img/qr.png', false);
+            $this->ticket->graphics($qr, Printer::IMG_DEFAULT);
         }
     }
 }
