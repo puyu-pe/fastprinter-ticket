@@ -45,7 +45,7 @@ class SweetTicketPrinter
         $this->printer = $data->printer;
         $this->type = $data->type;
         $this->data = $data->data;
-        $this->times = (!$data->times) ? 1 : $data->times;
+        $this->times = $data->times;
     }
 
     public function init($printer)
