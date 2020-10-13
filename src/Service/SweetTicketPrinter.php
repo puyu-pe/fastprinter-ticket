@@ -153,10 +153,9 @@ class SweetTicketPrinter
                     $this->documentLegal();
                     $this->ticket->feed(1);
                     $this->additional();
-                    $this->table_waiter();
                     $this->ticket->feed(1);
-                    $this->detail();
-                    $this->total_();
+                    $this->items();
+                    $this->amounts();
                     break;
 
                 case 'extra':
