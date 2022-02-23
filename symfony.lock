@@ -20,6 +20,9 @@
             "config/packages/nelmio_cors.yaml"
         ]
     },
+    "php": {
+        "version": "7.3"
+    },
     "psr/cache": {
         "version": "1.0.1"
     },

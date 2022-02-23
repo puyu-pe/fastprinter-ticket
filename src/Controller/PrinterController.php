@@ -36,12 +36,11 @@ class PrinterController
             $response = [
                 'success' => TRUE,
                 'message' => 'Se imprimio correctamente'
-            ];
-            ;
+            ];;
         } catch (\Throwable $th) {
             $response = [
                 'success' => FALSE,
-                'message' => $th->getMessage()
+                'message' => "File : " . $th->getFile() . " | Line : " . $th->getLine() . " | Msg :" . $th->getMessage()
             ];
         } finally {
 
