@@ -438,21 +438,6 @@ class SweetTicketPrinter
             return;
 
         $this->ticket->setJustification(Printer::JUSTIFY_CENTER);
-
-        $options = new QROptions([
-            'version'   => 10,
-            'eccLevel'  => QRCode::ECC_Q,
-            'scale'     => 4
-        ]);
-
-        if ($this->printer->name_system == '127.0.0.1' && $this->printer->type == 'ethernet') {
-            $this->ticket->text($this->data->stringQR);
-            $this->ticket->feed(1);
-        } else {
-            $qrGenerator = new QRCode($options);
-            $qrGenerator->render($this->data->stringQR, 'img/qr.png');
-            $qr = EscposImage::load('img/qr.png', false);
-            $this->ticket->graphics($qr, Printer::IMG_DEFAULT);
-        }
+        $this->ticket->qrCode($this->data->stringQR, Printer::QR_ECLEVEL_M, 5, Printer::QR_MODEL_2);
     }
 }
