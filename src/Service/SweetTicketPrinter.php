@@ -445,6 +445,8 @@ class SweetTicketPrinter
             'scale'     => 4
         ]);
 
+    //TO DO: Añadir codigo de qr nativo, revisando tipo de impresora
+
         if ($this->printer->name_system == '127.0.0.1' && $this->printer->type == 'ethernet') {
             $this->ticket->text($this->data->stringQR);
             $this->ticket->feed(1);
