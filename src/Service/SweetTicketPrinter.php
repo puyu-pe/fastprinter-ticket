@@ -107,75 +107,75 @@ class SweetTicketPrinter
 
     private function printLayout()
     {
-            $this->header();
-            switch ($this->type) {
-                case 'invoice':
-                    $this->businessAdditional();
-                    $this->documentLegal();
-                    $this->ticket->feed(1);
-                    $this->customer();
-                    $this->ticket->feed(1);
-                    $this->additional();
-                    $this->ticket->feed(1);
-                    $this->items();
-                    $this->amounts();
-                    $this->additionalFooter();
-                    $this->finalMessage();
-                    $this->stringQR();
+        $this->header();
+        switch ($this->type) {
+            case 'invoice':
+                $this->businessAdditional();
+                $this->documentLegal();
+                $this->ticket->feed(1);
+                $this->customer();
+                $this->ticket->feed(1);
+                $this->additional();
+                $this->ticket->feed(1);
+                $this->items();
+                $this->amounts();
+                $this->additionalFooter();
+                $this->finalMessage();
+                $this->stringQR();
 
-                    $this->ticket->pulse();
-                    break;
+                $this->ticket->pulse();
+                break;
 
-                case 'note':
-                    $this->documentLegal();
-                    $this->ticket->feed(1);
+            case 'note':
+                $this->documentLegal();
+                $this->ticket->feed(1);
 
-                    $this->customer();
-                    $this->additional();
-                    $this->ticket->feed(1);
+                $this->customer();
+                $this->additional();
+                $this->ticket->feed(1);
 
-                    $this->detail();
-                    $this->total();
-                    break;
+                $this->detail();
+                $this->total();
+                break;
 
-                case 'command':
-                    $this->ticket->feed(1);
-                    $this->productionArea();
-                    $this->ticket->feed(1);
-                    $this->textBackgroundInverted();
-                    $this->documentLegal();
-                    $this->additional();
-                    $this->ticket->feed(1);
-                    $this->items();
-                    break;
+            case 'command':
+                $this->ticket->feed(1);
+                $this->productionArea();
+                $this->ticket->feed(1);
+                $this->textBackgroundInverted();
+                $this->documentLegal();
+                $this->additional();
+                $this->ticket->feed(1);
+                $this->items();
+                break;
 
-                case 'precount':
-                    $this->documentLegal();
-                    $this->ticket->feed(1);
-                    $this->additional();
-                    $this->ticket->feed(1);
-                    $this->items();
-                    $this->amounts();
-                    break;
+            case 'precount':
+                $this->documentLegal();
+                $this->ticket->feed(1);
+                $this->additional();
+                $this->ticket->feed(1);
+                $this->items();
+                $this->amounts();
+                break;
 
-                case 'extra':
-                    $this->ticket->feed(1);
-                    $this->titleExtra();
-                    $this->ticket->feed(1);
-                    $this->additional();
-                    $this->ticket->feed(1);
-                    $this->items();
-                    $this->amounts();
-                    break;
+            case 'extra':
+                $this->ticket->feed(1);
+                $this->titleExtra();
+                $this->ticket->feed(1);
+                $this->additional();
+                $this->ticket->feed(1);
+                $this->items();
+                $this->amounts();
+                break;
 
-                default:
-                    throw new \Exception("No se pudo conectar con la tiketera");
-                    break;
-            }
+            default:
+                throw new \Exception("No se pudo conectar con la tiketera");
+                break;
+        }
 
-            $this->ticket->feed(4);
-            $this->ticket->cut(Printer::CUT_PARTIAL);
-            //$this->ticket->close();
+        $this->ticket->feed(4);
+        $this->ticket->cut(Printer::CUT_PARTIAL);
+        //$this->ticket->close();
 
     }
 
@@ -253,7 +253,10 @@ class SweetTicketPrinter
             case 'invoice':
             case 'note':
             case 'command':
-                $this->ticket->text(str_pad($this->data->document->description . ' : ' . $this->data->document->identifier, $this->width, ' ', STR_PAD_BOTH));
+                if (is_object($this->data->document))
+                    $this->ticket->text(str_pad($this->data->document->description . ' : ' . $this->data->document->identifier, $this->width, ' ', STR_PAD_BOTH));
+                else
+                    $this->ticket->text(str_pad($this->data->document . ' : ' . $this->data->documentId, $this->width, ' ', STR_PAD_BOTH));
                 break;
 
             case 'precount':
@@ -442,6 +445,8 @@ class SweetTicketPrinter
             'scale'     => 4
         ]);
 
+    //TO DO: Añadir codigo de qr nativo, revisando tipo de impresora
+
         if ($this->printer->name_system == '127.0.0.1' && $this->printer->type == 'ethernet') {
             $this->ticket->text($this->data->stringQR);
             $this->ticket->feed(1);
@@ -453,3 +458,4 @@ class SweetTicketPrinter
         }
     }
 }
+>>>>>>> ece245b4105b08e8c1f1e192abb7a849d0474143
