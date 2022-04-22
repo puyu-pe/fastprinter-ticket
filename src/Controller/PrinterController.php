@@ -48,4 +48,3 @@ class PrinterController
         }
     }
 }
->>>>>>> ece245b4105b08e8c1f1e192abb7a849d0474143
