@@ -204,7 +204,7 @@ class SweetTicketPrinter
 
                 $this->ticket->setJustification(Printer::JUSTIFY_CENTER);
                 $qr = EscposImage::load($logo, false);
-                $this->ticket->graphics($qr, Printer::IMG_DEFAULT);
+                $this->ticket->bitImage($qr, Printer::IMG_DEFAULT);
                 $this->ticket->setJustification(Printer::JUSTIFY_LEFT);
             }
 
@@ -454,7 +454,7 @@ class SweetTicketPrinter
             $qrGenerator = new QRCode($options);
             $qrGenerator->render($this->data->stringQR, 'img/qr.png');
             $qr = EscposImage::load('img/qr.png', false);
-            $this->ticket->graphics($qr, Printer::IMG_DEFAULT);
+            $this->ticket->bitImage($qr, Printer::IMG_DEFAULT);
         }
     }
 }
