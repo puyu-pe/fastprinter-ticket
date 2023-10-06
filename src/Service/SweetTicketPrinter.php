@@ -280,10 +280,8 @@ class SweetTicketPrinter
         if (!isset($this->data->textBackgroundInverted))
             return;
 
-        $this->ticket->setReverseColors(TRUE);
-        $this->ticket->text(str_pad(" {$this->data->textBackgroundInverted} ", $this->width, ' ', STR_PAD_BOTH));
+        $this->ticket->text(str_pad(" {$this->data->textBackgroundInverted} ", $this->width, '#', STR_PAD_BOTH));
         $this->ticket->feed(1);
-        $this->ticket->setReverseColors(FALSE);
     }
 
     private function customer()
